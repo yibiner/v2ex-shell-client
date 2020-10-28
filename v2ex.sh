@@ -1,6 +1,4 @@
-#!/bin/sh
-
-# set -xe
+#!/bin/bash
 
 reset="\e[0m"
 
@@ -67,7 +65,7 @@ _topics() {
     ARRAY_TITLE=()
     ARRAY_CONTENT=()
     ARRAY_URL=()
-    echo $TEMP_FILE
+    # echo $TEMP_FILE
     for((i = 0; i < $LENGTH; i++))
     do
         # 替换百分号可能引起的printf输出异常，只能在jq后解析，而不能单独通过echo解析
@@ -184,9 +182,9 @@ _replies() {
         created=$RET
         id=$(jq -r ".[$i].member.id" $TEMP_FILE)
         if [[ $thanks != "0" && $thanks != "null" ]]; then
-            printf "\n${blue}%3dL${reset}. $pink$member$reset $cyan$created$reset ♥️ $RED$thanks$reset\n${green}$content${reset}\n" "$(($i+1))" >> $replies_tmpfile
+            printf "\n${blue}%3dL${reset}. $yellow$member$reset $cyan$created$reset ♥️ $RED$thanks$reset\n${green}$content${reset}\n" "$(($i+1))" >> $replies_tmpfile
         else
-            printf "\n${blue}%3dL${reset}. $pink$member$reset $cyan$created$reset\n${green}$content${reset}\n" "$(($i+1))" >> $replies_tmpfile
+            printf "\n${blue}%3dL${reset}. $yellow$member$reset $cyan$created$reset\n${green}$content${reset}\n" "$(($i+1))" >> $replies_tmpfile
         fi
     done
     # 只有加上-r选项，多行文本的ascii color才会被当作一行处理显示，但是却有回滚时颜色不连续的异常，属于less的bug，暂不能解决。
@@ -370,7 +368,8 @@ _usage() {
     late            | 最新主题
     login/relogin   | 登录/重新登录
     daily           | 领取每日签到奖励
-    cate <catename> | 获取指定分类的主题<tech|creative|play|apple|jobs|deals|city|qna|hot|all|r2|nodes|members>
+    cate <catename> | 获取指定分类的主题 <tech:技术|creative:创意|play:好玩|apple:Apple|jobs:酷工作|deals:交易|
+                    |                   city:城市|qna:问与答|hot:最热|all:全部|r2:R2|nodes:节点|members:关注>
     node <nodename> | 获取节点的主题
     <num>           | 查看指定主题序号的所有回复
     open <num>      | 使用默认浏览器查看指定主题贴
@@ -398,14 +397,16 @@ do
     else
         UPMODE=$(echo $MODE | tr "[:lower:]" "[:upper:]")
         if test "$USER_NAME"; then
-            printf "($pink$USER_NAME$reset) $UPMODE # "
+            CmdPrefix="($pink$USER_NAME$reset) $UPMODE # "
         else
-            printf "$UPMODE # "
+            CmdPrefix="$UPMODE # "
         fi
-        read data
+        # read data
+        read -r -e -d $'\n' -p "$CmdPrefix" data
         if ! test "$data"; then
             continue
         fi
+        history -s "$data"
     fi
     op=$(echo $data | cut -d " " -f 1)
     case "$op" in
